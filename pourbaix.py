@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 HybridPB: Hybrid Pourbaix Diagram Generation Tool
 
@@ -439,7 +440,8 @@ def main():
 
     # Normalize element counts by subtracting minimum counts
     # This step converts absolute counts to relative counts for formation energy calculations
-    print("Normalizing element counts relative to reference...")
+    if args.show_count:
+        print("Normalizing element counts relative to reference...")
     for row in surfs:
         for el in sorted_elements:
             row[el] = row[el] - min_counts[el]
@@ -449,7 +451,7 @@ def main():
     zero_cols = [el for el in sorted_elements if all(row[el] == 0 for row in surfs)]
     remaining_elements = [el for el in sorted_elements if el not in zero_cols]
     
-    if zero_cols:
+    if zero_cols and args.show_element:
         print(f"Removing elements with zero variation: {zero_cols}")
     
     # Clean up the data structure by removing zero columns
@@ -477,13 +479,15 @@ def main():
     # Among such surfaces, we choose the one with the highest energy for numerical stability
     
     ref_candidates = []
-    print("Searching for reference surface candidates...")
+    if args.show_ref:
+        print("Searching for reference surface candidates...")
     
     for i, row in enumerate(surfs):
         # Check if this surface contains only H and O (all unique elements = 0)
         if all(row.get(elem, 0) == 0.0 for elem in unique_elements):
             ref_candidates.append((i, float(row['E_DFT']), row['name']))
-            print(f"  Candidate {i}: {row['name']} (E_DFT: {row['E_DFT']:.3f} eV)")
+            if args.show_ref:
+                print(f"  Candidate {i}: {row['name']} (E_DFT: {row['E_DFT']:.3f} eV)")
 
     if ref_candidates:
         # Select the candidate with highest energy as reference surface
@@ -491,8 +495,9 @@ def main():
         ref_surf_idx, ref_energy, ref_name = max(ref_candidates, key=lambda x: x[1])
         ref_surf = surfs[ref_surf_idx]
         
-        print(f"\nSelected reference surface: {ref_name} (index {ref_surf_idx})")
-        print(f"  Reference energy: {ref_energy:.3f} eV")
+        if args.show_ref:
+            print(f"\nSelected reference surface: {ref_name} (index {ref_surf_idx})")
+            print(f"  Reference energy: {ref_energy:.3f} eV")
         
         if args.show_ref:
             print(f"  Detailed composition:")
@@ -524,8 +529,9 @@ def main():
         return
     
     reference_surface_energy = ref_surf['E_DFT']
-    print(f"\nApplying formation energy corrections...")
-    print(f"Using reference energy: {reference_surface_energy:.3f} eV")
+    if args.show_ref:
+        print(f"\nApplying formation energy corrections...")
+        print(f"Using reference energy: {reference_surface_energy:.3f} eV")
     
     for k in range(len(surfs)):
         if not file_gibbs_corrections or all(pd.isna(value) for value in file_gibbs_corrections.values()):  # If no Gibbs corrections are provided or all values are NaN
@@ -582,7 +588,8 @@ def main():
         if not os.path.exists(thermo_data_path):
             thermo_data_path = os.path.join(os.path.dirname(__file__), 'thermodynamic_data.jsonc')
     
-    print(f"\nLoading thermodynamic data from: {thermo_data_path}")
+    if args.show_thermo:
+        print(f"\nLoading thermodynamic data from: {thermo_data_path}")
     thermo_data = {}
     if os.path.exists(thermo_data_path):
         thermo_data = load_jsonc(thermo_data_path)
@@ -1071,7 +1078,7 @@ def main():
         df = pd.DataFrame(surfs, columns=['E_DFT', 'e'] + remaining_elements + ['conc', 'name', 'A', 'B'])
     else:
         df = pd.DataFrame(surfs, columns=['E_DFT', 'e'] + remaining_elements + ['conc', 'name'])
-    if is_hybrid:
+    if is_hybrid and args.show_thermo:
         print(format_df_for_display(df))
         print(f"After adding combinations: {nsurfs} surfs entries\n")
 
@@ -1557,14 +1564,5 @@ if __name__ == "__main__":
     # ========================================
     # MAIN PROGRAM EXECUTION
     # ========================================
-    
-    print("="*60)
-    print("HybridPB: Hybrid Pourbaix Diagram Generation Tool")
-    print("="*60)
-    print(f"Physical constants:")
-    print(f"  Temperature: {T} K")
-    print(f"  RT×ln(10): {const:.4f} eV")
-    print(f"Starting calculations...")
-    print("="*60)
-    
+        
     main()
