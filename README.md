@@ -1,7 +1,7 @@
 # HybridPB: Hybrid Pourbaix Diagram Generation Tool
 
 ![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)
 
 HybridPB is a comprehensive Python tool for generating Pourbaix diagrams (potential-pH diagrams) for electrochemical systems. It supports both surface and bulk phases with advanced features including Grand Canonical DFT corrections and hybrid surface-bulk calculations.
 
@@ -288,7 +288,9 @@ We welcome contributions! Please follow these guidelines:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+**Note**: GPL-3.0 is a copyleft license that requires any derivative works to be distributed under the same license terms. This ensures that improvements and modifications remain open source.
 
 ## 📚 Citation
 
