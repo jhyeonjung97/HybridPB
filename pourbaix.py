@@ -13,8 +13,8 @@ Key Features:
 - Support for aqueous species and gas phases
 - Export capabilities for publication-ready figures
 
-Author: [Original author information]
-Last modified: [Date]
+Author: Hyeonjung Jung
+Last modified: 2025
 """
 
 # Standard library imports
@@ -92,8 +92,6 @@ parser.add_argument('--hybrid', action='store_true',
                     help='Enable hybrid mode for surface-bulk hybrid calculations')
 parser.add_argument('--gc', action='store_true', 
                     help='Apply Grand Canonical DFT corrections using A, B, C columns from label.csv')
-parser.add_argument('--gibbs', action='store_true', 
-                    help='Apply Gibbs free energy corrections from G_corr column in label.csv')
 
 # Thermodynamic conditions
 parser.add_argument('--pH', type=int, default=0, 
@@ -210,7 +208,6 @@ args = parser.parse_args()
 
 # Extract key calculation modes from arguments
 is_hybrid = args.hybrid      # Hybrid surface-bulk calculations
-is_gibbs = args.gibbs        # Apply Gibbs free energy corrections
 is_gc = args.gc              # Apply Grand Canonical DFT corrections
 
 # Build output filename based on calculation modes and options
@@ -313,8 +310,8 @@ def main():
             if '#OH' in row and not pd.isna(row['#OH']):
                 file_oh_counts[json_name] = float(row['#OH'])
             
-            # Store Gibbs free energy correction if Gibbs mode is enabled
-            if is_gibbs and 'G_corr' in row and not pd.isna(row['G_corr']):
+            # Store Gibbs free energy correction if available
+            if 'G_corr' in row and not pd.isna(row['G_corr']):
                 file_gibbs_corrections[json_name] = float(row['G_corr'])
             
             # Store Grand Canonical DFT parameters if GC mode is enabled
@@ -412,12 +409,6 @@ def main():
         row['conc'] = 1  # Concentration (default: 1, may be modified later)
         json_basename = os.path.basename(json_file)
         row['name'] = file_labels.get(json_basename, json_file)  # Display name
-        
-        # Apply Gibbs free energy correction if available
-        if is_gibbs and json_basename in file_gibbs_corrections:
-            row['gibbs_corr'] = file_gibbs_corrections[json_basename]
-        else:
-            row['gibbs_corr'] = 0.0
             
         # Apply Grand Canonical DFT parameters if available
         if is_gc and json_basename in file_gc_params:
@@ -428,8 +419,12 @@ def main():
             row['E_DFT'] = gc_params['C']  # Use corrected energy instead of DFT energy
         else:
             row['A'] = 0.0
-            row['B'] = 0.0    
-        
+            row['B'] = 0.0 
+
+        # Apply Gibbs free energy correction if available
+        if json_basename in file_gibbs_corrections:
+            row['E_DFT'] += file_gibbs_corrections[json_basename]
+
         surfs.append(row)
 
     # ========================================
@@ -533,36 +528,39 @@ def main():
     print(f"Using reference energy: {reference_surface_energy:.3f} eV")
     
     for k in range(len(surfs)):
-        # Determine OH group count for this surface
-        oh_count = 0  # Default: no OH groups
-        json_basename = None
-        
-        # Find the corresponding filename for this surface
-        for fname, label in file_labels.items():
-            if label == surfs[k]['name']:
-                json_basename = fname
-                break
-        
-        # Use OH count from CSV file if available
-        if json_basename and json_basename in file_oh_counts:
-            if not np.isnan(file_oh_counts[json_basename]):
-                oh_count = file_oh_counts[json_basename]
-        
-        # Calculate formation energy correction using thermodynamic reference states
-        # The correction accounts for the chemical potentials of H, O, and OH
-        formation_energy_correction = (
-            - (surfs[k]['H'] - oh_count) * (gh - dgh)  # H atoms (excluding those in OH)
-            - (surfs[k]['O'] - oh_count) * (go - dgo)  # O atoms (excluding those in OH) 
-            - oh_count * (goh - dgoh)                  # OH groups
-        )
-        
-        # Apply additional Gibbs free energy correction if specified
-        gibbs_correction = surfs[k]['gibbs_corr'] if is_gibbs else 0.0
+        if not file_gibbs_corrections or all(pd.isna(value) for value in file_gibbs_corrections.values()):  # If no Gibbs corrections are provided or all values are NaN
+            # Determine OH group count for this surface
+            oh_count = 0  # Default: no OH groups
+            json_basename = None
+            
+            # Find the corresponding filename for this surface
+            for fname, label in file_labels.items():
+                if label == surfs[k]['name']:
+                    json_basename = fname
+                    break
+            
+            # Use OH count from CSV file if available
+            if json_basename and json_basename in file_oh_counts:
+                if not np.isnan(file_oh_counts[json_basename]):
+                    oh_count = file_oh_counts[json_basename]
+            
+            # Calculate formation energy correction using thermodynamic reference states
+            # The correction accounts for the chemical potentials of H, O, and OH
+            formation_energy_correction = (
+                - (surfs[k]['H'] - oh_count) * (gh - dgh)  # H atoms (excluding those in OH)
+                - (surfs[k]['O'] - oh_count) * (go - dgo)  # O atoms (excluding those in OH) 
+                - oh_count * (goh - dgoh)                  # OH groups
+            )
+        else:  # If Gibbs corrections are provided, use simpler correction
+            formation_energy_correction = (
+                - surfs[k]['H'] * gh  # H atoms
+                - surfs[k]['O'] * go  # O atoms
+            )
         
         # Update the energy to formation energy
         original_energy = surfs[k]['E_DFT']
         surfs[k]['E_DFT'] = (original_energy - reference_surface_energy + 
-                           formation_energy_correction + gibbs_correction)
+                           formation_energy_correction)
         
         if args.show_ref and k < 5:  # Show details for first few surfaces
             print(f"  {surfs[k]['name']}: {original_energy:.3f} → {surfs[k]['E_DFT']:.3f} eV")
@@ -950,7 +948,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + ion[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * ion[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + ion[key]
@@ -965,7 +963,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + solid[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * solid[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + solid[key]
@@ -980,7 +978,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + gas[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * gas[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + gas[key]
@@ -1026,7 +1024,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + solid[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * solid[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + solid[key]
@@ -1041,7 +1039,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + gas[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * gas[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + gas[key]
@@ -1056,7 +1054,7 @@ def main():
                                     new_surf[key] = surfs[k][key] + '+' + liquid[key]
                                 elif key == 'conc':
                                     new_surf[key] = surfs[k][key] * liquid[key]
-                                elif key in ['gibbs_corr', 'A', 'B']:
+                                elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
                                     new_surf[key] = surfs[k][key] + liquid[key]

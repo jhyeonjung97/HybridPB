@@ -35,7 +35,7 @@ HybridPB is a comprehensive Python tool for generating Pourbaix diagrams (potent
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/HybridPB.git
+git clone https://github.com/jhyeonjung97/HybridPB.git
 cd HybridPB
 
 # Install dependencies
@@ -67,8 +67,8 @@ python pourbaix.py --json-dir ./structures --pHmin 0 --pHmax 14 --Umin -2 --Umax
 # Hybrid mode with Grand Canonical DFT corrections
 python pourbaix.py --hybrid --gc --json-dir ./structures --csv-dir ./labels
 
-# With Gibbs free energy corrections and custom thermodynamic data
-python pourbaix.py --gibbs --thermo-data ./custom_thermo.json --ref-energies ./custom_ref.json
+# With custom thermodynamic data
+python pourbaix.py --thermo-data ./custom_thermo.json --ref-energies ./custom_ref.json
 ```
 
 ## 📁 Input Files
@@ -90,6 +90,8 @@ python pourbaix.py --gibbs --thermo-data ./custom_thermo.json --ref-energies ./c
 - **Filename**: `label.csv`
 - **Location**: Specified by `--csv-dir` or `--label-csv`
 - **Format**: CSV with columns: `json_name,label,#OH,G_corr,A,B,C`
+- **G_corr**: Gibbs free energy corrections (eV) - automatically applied when provided
+- **A,B,C**: Grand Canonical DFT parameters (used with `--gc` flag)
 
 **Example `label.csv`:**
 ```csv
@@ -138,7 +140,6 @@ structure3.json,Fe,0.0,0.0,0.0,0.0,-125.89
 ```bash
 --hybrid              # Enable hybrid surface-bulk calculations
 --gc                  # Apply Grand Canonical DFT corrections
---gibbs               # Apply Gibbs free energy corrections
 ```
 
 ### Thermodynamic Conditions
@@ -239,7 +240,7 @@ python pourbaix.py --hybrid --gc --json-dir ./examples/3_FeNC \
 # Custom thermodynamic analysis
 python pourbaix.py --json-dir ./examples/2_TiNC \
                    --thermo-data ./examples/2_TiNC/thermodynamic_data.jsonc \
-                   --gibbs --show-thermo
+                   --show-thermo
 ```
 
 ## 🔬 Methodology
@@ -294,23 +295,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use HybridPB in your research, please cite:
 
 ```bibtex
-@software{hybridpb2024,
+@software{hybridpb2025,
   title={HybridPB: Hybrid Pourbaix Diagram Generation Tool},
-  author={[Your Name]},
-  year={2024},
-  url={https://github.com/your-username/HybridPB}
+  author={Hyeonjung Jung},
+  year={2025},
+  url={https://github.com/jhyeonjung97/HybridPB}
 }
 ```
 
 ## 🆘 Support
 
-- **Issues**: Report bugs and request features via [GitHub Issues](https://github.com/your-username/HybridPB/issues)
-- **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/your-username/HybridPB/discussions)
+- **Issues**: Report bugs and request features via [GitHub Issues](https://github.com/jhyeonjung97/HybridPB/issues)
+- **Discussions**: Join the conversation in [GitHub Discussions](https://github.com/jhyeonjung97/HybridPB/discussions)
 - **Documentation**: See the `docs/` directory for detailed documentation
 
 ## 🔄 Changelog
 
-### Version 1.0.0 (2024)
+### Version 1.0.0 (2025)
 - Initial release with hybrid Pourbaix diagram generation
 - Support for Grand Canonical DFT corrections
 - Comprehensive thermodynamic data integration
