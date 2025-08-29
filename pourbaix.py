@@ -138,8 +138,8 @@ parser.add_argument('--Gmax', type=float,
 # Figure dimensions and layout
 parser.add_argument('--figx', type=float, default=4, 
                     help='Figure width in inches (default: 4)')
-parser.add_argument('--figy', type=float, default=3, 
-                    help='Figure height in inches (default: 3)')
+parser.add_argument('--figy', type=float, default=4, 
+                    help='Figure height in inches (default: 4)')
 
 # Electrochemical reference lines
 parser.add_argument('--HER', action='store_true', 
