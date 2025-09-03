@@ -387,7 +387,14 @@ def main():
     # This section creates the main data structure that will be used for all calculations
     
     # Re-sort elements by atomic number for consistency
+    # Ensure H and O are always included for electrochemical calculations
     sorted_elements = sorted(elements, key=lambda x: element(x).atomic_number)
+    if 'H' not in sorted_elements:
+        sorted_elements.append('H')
+    if 'O' not in sorted_elements:
+        sorted_elements.append('O')
+    # Re-sort to maintain atomic number ordering
+    sorted_elements = sorted(sorted_elements, key=lambda x: element(x).atomic_number)
     
     # Track minimum count of each element across all structures
     # This is used later for reference energy calculations
@@ -463,7 +470,8 @@ def main():
     
     # Remove element columns that are zero for all structures after normalization
     # These elements don't contribute to the phase equilibria
-    zero_cols = [el for el in sorted_elements if all(row[el] == 0 for row in surfs)]
+    # Note: H and O are always kept for electrochemical calculations even if count is 0
+    zero_cols = [el for el in sorted_elements if el not in ['H', 'O'] and all(row[el] == 0 for row in surfs)]
     remaining_elements = [el for el in sorted_elements if el not in zero_cols]
     
     if zero_cols and args.show_element:
