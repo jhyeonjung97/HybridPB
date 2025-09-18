@@ -204,6 +204,8 @@ parser.add_argument('--show-label', action='store_true',
                     help='Print file labels and their assignments')
 parser.add_argument('--show-min-coord', action='store_true', 
                     help='Print minimum coordination analysis for each surface')
+parser.add_argument('--show-transitions', action='store_true', 
+                    help='Print most stable surface transition points in 1D plots')
 
 # Structure visualization
 parser.add_argument('--png', action='store_true', 
@@ -1312,6 +1314,103 @@ def main():
     unique_ids_set = set(unique_ids)
     unique_second_ids_set = set(unique_second_ids_pH)
 
+    # Find transition points where most stable surface changes (if requested)
+    if args.show_transitions:
+        print(f"\n=== Most Stable Surface Transitions at pH {target_pH} ===")
+        
+        def find_transition_point(surf1_id, surf2_id, U_start, U_end):
+            """Find transition point between two surfaces in given potential range"""
+            surf1 = surfs[surf1_id]
+            surf2 = surfs[surf2_id]
+            
+            # Calculate coefficients for quadratic equation: a*U^2 + b*U + c = 0
+            a = surf1['A'] - surf2['A']
+            b = (surf1['B'] - surf2['B']) + (surf1['H'] - 2*surf1['O'] - surf1['e']) - (surf2['H'] - 2*surf2['O'] - surf2['e'])
+            c = (surf1['E_DFT'] - surf2['E_DFT']) + const * (surf1['H'] - 2*surf1['O'] - surf2['H'] + 2*surf2['O']) * target_pH + const * (log10(surf1['conc']) - log10(surf2['conc']))
+            
+            # Solve quadratic equation
+            if abs(a) > 1e-10:  # Quadratic case
+                discriminant = b*b - 4*a*c
+                if discriminant >= 0:
+                    U1 = (-b + np.sqrt(discriminant)) / (2*a)
+                    U2 = (-b - np.sqrt(discriminant)) / (2*a)
+                    for U_sol in [U1, U2]:
+                        if U_start <= U_sol <= U_end:
+                            # Verify this is actually a transition point
+                            E1 = dg(surf1, pH=target_pH, U=U_sol, ref_surf=surfs[ref_surf_idx])
+                            E2 = dg(surf2, pH=target_pH, U=U_sol, ref_surf=surfs[ref_surf_idx])
+                            if abs(E1 - E2) < 1e-6:  # Energies are equal
+                                return U_sol
+            else:  # Linear case
+                if abs(b) > 1e-10:
+                    U_sol = -c / b
+                    if U_start <= U_sol <= U_end:
+                        # Verify this is actually a transition point
+                        E1 = dg(surf1, pH=target_pH, U=U_sol, ref_surf=surfs[ref_surf_idx])
+                        E2 = dg(surf2, pH=target_pH, U=U_sol, ref_surf=surfs[ref_surf_idx])
+                        if abs(E1 - E2) < 1e-6:  # Energies are equal
+                            return U_sol
+            return None
+        
+        # Sequential transition finding: start from lowest potential and find next transition
+        transition_points = []
+        current_surf_id = int(lowest_surfaces_pH[0])  # Most stable surface at Umin
+        current_U = Umin
+        
+        print(f"Starting from {surfs[current_surf_id]['name']} at U = {current_U:.3f} V")
+        
+        while current_U < Umax:
+            # Find the next transition point from current surface
+            next_transition = None
+            next_surf_id = None
+            min_next_U = Umax + 1
+            
+            # Check all other surfaces for the next transition
+            for other_surf_id in unique_ids_set:
+                if other_surf_id != current_surf_id:
+                    U_trans = find_transition_point(current_surf_id, other_surf_id, current_U + 1e-6, Umax)
+                    if U_trans is not None and U_trans < min_next_U:
+                        # Verify this is actually the next transition by checking stability
+                        U_test = U_trans + 1e-6
+                        if U_test <= Umax:
+                            E_current = dg(surfs[current_surf_id], pH=target_pH, U=U_test, ref_surf=surfs[ref_surf_idx])
+                            E_other = dg(surfs[other_surf_id], pH=target_pH, U=U_test, ref_surf=surfs[ref_surf_idx])
+                            if E_other < E_current:  # Other surface becomes more stable
+                                min_next_U = U_trans
+                                next_transition = U_trans
+                                next_surf_id = other_surf_id
+            
+            if next_transition is not None:
+                transition_points.append((next_transition, current_surf_id, next_surf_id))
+                print(f"  Transition at U = {next_transition:.3f} V: {surfs[current_surf_id]['name']} → {surfs[next_surf_id]['name']}")
+                current_surf_id = next_surf_id
+                current_U = next_transition
+            else:
+                break  # No more transitions found
+        
+        # Print transition information
+        if transition_points:
+            print(f"\nFound {len(transition_points)} sequential transition point(s):")
+            for i, (U_trans, surf_from, surf_to) in enumerate(transition_points):
+                print(f"  {i+1}. U = {U_trans:.3f} V vs SHE")
+                print(f"     {surfs[surf_from]['name']} → {surfs[surf_to]['name']}")
+        else:
+            print("No transitions found in the potential range.")
+        
+        # Print stability range for each surface
+        print(f"\n=== Stability Ranges at pH {target_pH} ===")
+        unique_surfaces = np.unique(lowest_surfaces_pH.astype(int))
+        for surf_id in unique_surfaces:
+            # Find where this surface is stable
+            stable_indices = np.where(lowest_surfaces_pH == surf_id)[0]
+            if len(stable_indices) > 0:
+                U_start = Urange[stable_indices[0]]
+                U_end = Urange[stable_indices[-1]]
+                print(f"  {surfs[surf_id]['name']}: {U_start:.3f} to {U_end:.3f} V vs SHE")
+    
+    # Calculate energy at specific pH for plotting
+    all_energies = []
+    
     # 1D plot: Sort unique_ids_set, unique_second_ids_set by 'e' value first, then by energy at U=0
     energies_at_U0 = [(k,surfs[k]['e'] - surfs[k]['H'] + 2*surfs[k]['O'], dg(surfs[k], pH=target_pH, U=0, ref_surf=surfs[ref_surf_idx])) for k in unique_ids_set | unique_second_ids_set]
     sorted_unique_ids = [k for k, _, _ in sorted(energies_at_U0, key=lambda x: (x[1], x[2]))]  # Sort by 'e' first, then by energy
