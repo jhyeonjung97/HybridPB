@@ -1493,7 +1493,7 @@ def main():
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize='small', ncol=3, handlelength=3, edgecolor='black')
-    plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
     print(f"Pourbaix diagram saved as {png_name}_pH{target_pH}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
