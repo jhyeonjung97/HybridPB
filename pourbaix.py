@@ -684,9 +684,9 @@ def main():
                             row['e'] = row['e'] / el_count
                             for elem in remaining_elements:
                                 row[elem] = row[elem] / el_count
-                            # Display fractions as superscript/subscript
-                            subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
-                            row['name'] = f'¹⁄{subscript_count}' + row['name']
+                            # # Display fractions as superscript/subscript
+                            # subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
+                            # row['name'] = f'¹⁄{subscript_count}' + row['name']
 
                         ions.append(row)
                         ions_el.append(row)
@@ -732,9 +732,9 @@ def main():
                             row['e'] = row['e'] / el_count
                             for elem in remaining_elements:
                                 row[elem] = row[elem] / el_count
-                            # Display fractions as superscript/subscript
-                            subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
-                            row['name'] = f'¹⁄{subscript_count}' + row['name']
+                            # # Display fractions as superscript/subscript
+                            # subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
+                            # row['name'] = f'¹⁄{subscript_count}' + row['name']
                         
                         solids.append(row)
                         solids_el.append(row)
@@ -780,9 +780,9 @@ def main():
                             row['e'] = row['e'] / el_count
                             for elem in remaining_elements:
                                 row[elem] = row[elem] / el_count
-                            # Display fractions as superscript/subscript
-                            subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
-                            row['name'] = f'¹⁄{subscript_count}' + row['name']
+                            # # Display fractions as superscript/subscript
+                            # subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
+                            # row['name'] = f'¹⁄{subscript_count}' + row['name']
 
                         gases.append(row)
                         gases_el.append(row)
@@ -829,8 +829,8 @@ def main():
                             for elem in remaining_elements:
                                 row[elem] = row[elem] / el_count
                             # Display fractions as superscript/subscript
-                            subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
-                            row['name'] = f'¹⁄{subscript_count}' + row['name']
+                            # subscript_count = SUBSCRIPT_NUMS.get(str(int(el_count)), str(int(el_count)))
+                            # row['name'] = f'¹⁄{subscript_count}' + row['name']
 
                         liquids.append(row)
                         liquids_el.append(row)
@@ -963,14 +963,32 @@ def main():
         print(format_df_for_display(liquids_df))
         print(f"Liquids: {nliquids} entries\n")
 
+    unique_elements_count = {}
+    for unique_elem in unique_elements:
+        unique_elements_count[unique_elem] = max(surfs, key=lambda x: x[unique_elem])[unique_elem]
+    print(unique_elements_count)
+
+    # unique_elements_list = []
+    # for unique_elem in unique_elements:
+    #     count = int(unique_elements_count[unique_elem])
+    #     unique_elements_list.extend([unique_elem] * count)
+    # print(unique_elements_list)
+
     new_surfs = []
-    
     if is_hybrid:
         # Process each unique_element
         for unique_elem in unique_elements:
+            print(f"Processing unique_element: {unique_elem}")
+            # print("Original surfs:")
+            # for surf in surfs:
+            #     print(surf)
+            # print("--------------------------------")
+            new_surfs = []
+            nsurfs = len(surfs)
             # Find surfs where the unique_element is 0
             for k in range(nsurfs):
-                if surfs[k][unique_elem] == 0:
+                if surfs[k][unique_elem] < unique_elements_count[unique_elem]:
+                    diff = unique_elements_count[unique_elem] - surfs[k][unique_elem]
                     # Combine with compounds having 1 unique_element from ions
                     for ion in ions:
                         if ion[unique_elem] == 1:
@@ -979,11 +997,11 @@ def main():
                                 if key == 'name':
                                     new_surf[key] = surfs[k][key] + '+' + ion[key]
                                 elif key == 'conc':
-                                    new_surf[key] = surfs[k][key] * ion[key]
+                                    new_surf[key] = surfs[k][key] * ion[key]**diff
                                 elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
-                                    new_surf[key] = surfs[k][key] + ion[key]
+                                    new_surf[key] = surfs[k][key] + ion[key]*diff
                             new_surfs.append(new_surf)
                     
                     # Combine with compounds having 1 unique_element from solids
@@ -994,11 +1012,11 @@ def main():
                                 if key == 'name':
                                     new_surf[key] = surfs[k][key] + '+' + solid[key]
                                 elif key == 'conc':
-                                    new_surf[key] = surfs[k][key] * solid[key]
+                                    new_surf[key] = surfs[k][key] * solid[key]**diff
                                 elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
-                                    new_surf[key] = surfs[k][key] + solid[key]
+                                    new_surf[key] = surfs[k][key] + solid[key]*diff
                             new_surfs.append(new_surf)
                     
                     # Combine with compounds having 1 unique_element from gases
@@ -1009,12 +1027,17 @@ def main():
                                 if key == 'name':
                                     new_surf[key] = surfs[k][key] + '+' + gas[key]
                                 elif key == 'conc':
-                                    new_surf[key] = surfs[k][key] * gas[key]
+                                    new_surf[key] = surfs[k][key] * gas[key]**diff
                                 elif key in ['A', 'B']:
                                     new_surf[key] = surfs[k][key]  # Keep original surface values
                                 else:
-                                    new_surf[key] = surfs[k][key] + gas[key]
+                                    new_surf[key] = surfs[k][key] + gas[key]*diff
                             new_surfs.append(new_surf)
+            # print("New surfs:")
+            # for surf in new_surfs:
+            #     print(surf)
+            # print("--------------------------------")
+            surfs.extend(new_surfs)
     else:
         # When is_hybrid is False: use only pure forms of each element
         # Find pure form compounds of each element (1 of the element, 0 of others)
@@ -1091,13 +1114,19 @@ def main():
                                 else:
                                     new_surf[key] = surfs[k][key] + liquid[key]
                             new_surfs.append(new_surf)
+        surfs.extend(new_surfs)
 
-    # Add new_surfs to surfs
-    surfs.extend(new_surfs)
-    # # Keep only those where not all unique_elements are 0
-    unique_surfs = [surf for surf in surfs if not all(surf[elem] == 0 for elem in unique_elements)]
+    for surf in surfs:
+        print(surf)
+
+    # Keep only those where surf[elem] matches unique_elements_count[elem] for all unique_elements
+    unique_surfs = [surf for surf in surfs if all(surf[elem] == unique_elements_count[elem] for elem in unique_elements)]
     if len(unique_surfs) > 0:
         surfs = unique_surfs
+
+    # for surf in surfs:
+    #     print(surf)
+
     nsurfs = len(surfs)
     if is_gc:
         df = pd.DataFrame(surfs, columns=['E_DFT', 'e'] + remaining_elements + ['conc', 'name', 'A', 'B'])
