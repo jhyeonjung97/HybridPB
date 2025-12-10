@@ -55,6 +55,9 @@ from ase.io import read
 from mendeleev import element
 from pymatgen.core.ion import Ion
 
+plt.rcParams['font.family'] = 'Helvetica'
+plt.rcParams['font.sans-serif'] = ['Helvetica']
+
 def load_jsonc(file_path):
     """
     Load JSON file with comments (JSONC format).
@@ -164,6 +167,8 @@ parser.add_argument('--cmax', type=float, default=0.7,
                     help='Maximum value for color mapping in bulk plots (default: 0.7)')
 parser.add_argument('--cgap', type=float, default=0.0, 
                     help='Fraction of colormap to skip in the center (e.g., 0.2 skips middle 20 percent)')
+parser.add_argument('--colors-bulk', type=str, nargs='+', 
+                    help='Explicit color names for bulk plots (e.g., --colors-bulk red blue green orange). Overrides --cmap.')
 
 # Color scheme customization for 2D plots
 parser.add_argument('--cmap-2d', type=str, default='RdBu', 
@@ -174,6 +179,8 @@ parser.add_argument('--cmax-2d', type=float, default=1.0,
                     help='Maximum value for color mapping in 2D plots (default: 1.0)')
 parser.add_argument('--cgap-2d', type=float, default=0.2, 
                     help='Color gap for 2D plots (default: 0.2)')
+parser.add_argument('--colors-2d', type=str, nargs='+', 
+                    help='Explicit color names for 2D plots (e.g., --colors-2d red blue green orange). Overrides --cmap-2d.')
 
 # Color scheme customization for 1D plots
 parser.add_argument('--cmap-1d', type=str, default='Spectral', 
@@ -184,6 +191,8 @@ parser.add_argument('--cmax-1d', type=float, default=1.0,
                     help='Maximum value for color mapping in 1D plots (default: 1.0)')
 parser.add_argument('--cgap-1d', type=float, default=0.0, 
                     help='Color gap for 1D plots (default: 0.0)')
+parser.add_argument('--colors-1d', type=str, nargs='+', 
+                    help='Explicit color names for 1D plots (e.g., --colors-1d red blue green orange). Overrides --cmap-1d.')
 
 # Display options
 parser.add_argument('--no-bulk', action='store_true', 
@@ -844,8 +853,8 @@ def main():
 
                 fig, ax = plt.subplots(figsize=(args.figx, args.figy))
                 ax.axis([pHmin, pHmax, Umin, Umax])
-                ax.set_xlabel('pH')
-                ax.set_ylabel('E (V vs. SHE)')
+                ax.set_xlabel('pH', fontsize=12)
+                ax.set_ylabel('E (V vs. SHE)', fontsize=12)
                 plt.xticks(np.arange(pHmin, pHmax + 1, 2))
 
                 # Calculate lowest bulks
@@ -870,32 +879,40 @@ def main():
                         if bulk_id not in unique_ids:
                             unique_ids.append(bulk_id)
 
-                colormap = getattr(plt.cm, args.cmap, plt.cm.Greys)
                 n_colors = len(unique_ids)
-                if args.cgap > 0 and args.cmap in Diverging_colors:
-                    gap = args.cgap
-                    left_end = 0.5 - gap/2
-                    right_start = 0.5 + gap/2
-                    
-                    # Calculate how many colors go to left and right
-                    n_left = int(np.ceil(n_colors / 2))
-                    n_right = n_colors - n_left
-                    
-                    # Create color values avoiding the gap
-                    if n_left > 0:
-                        left = np.linspace(args.cmin, left_end, n_left, endpoint=True)
-                    else:
-                        left = []
-                    
-                    if n_right > 0:
-                        right = np.linspace(right_start, args.cmax, n_right, endpoint=True)
-                    else:
-                        right = []
-                    
-                    color_values = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+                
+                # Check if explicit colors are provided
+                if hasattr(args, 'colors_bulk') and args.colors_bulk:
+                    explicit_colors = parse_colors(args.colors_bulk)
+                    # Cycle colors if not enough provided
+                    colors = [explicit_colors[i % len(explicit_colors)] for i in range(n_colors)]
                 else:
-                    color_values = np.linspace(args.cmin, args.cmax, n_colors)
-                colors = colormap(color_values)
+                    # Use colormap as before
+                    colormap = getattr(plt.cm, args.cmap, plt.cm.Greys)
+                    if args.cgap > 0 and args.cmap in Diverging_colors:
+                        gap = args.cgap
+                        left_end = 0.5 - gap/2
+                        right_start = 0.5 + gap/2
+                        
+                        # Calculate how many colors go to left and right
+                        n_left = int(np.ceil(n_colors / 2))
+                        n_right = n_colors - n_left
+                        
+                        # Create color values avoiding the gap
+                        if n_left > 0:
+                            left = np.linspace(args.cmin, left_end, n_left, endpoint=True)
+                        else:
+                            left = []
+                        
+                        if n_right > 0:
+                            right = np.linspace(right_start, args.cmax, n_right, endpoint=True)
+                        else:
+                            right = []
+                        
+                        color_values = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+                    else:
+                        color_values = np.linspace(args.cmin, args.cmax, n_colors)
+                    colors = colormap(color_values)
                 cmap = mcolors.ListedColormap(colors)
                 bounds = np.arange(n_colors + 1) - 0.5
                 norm = mcolors.BoundaryNorm(bounds, cmap.N)
@@ -918,13 +935,13 @@ def main():
                     plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
 
                 if args.legend_in:
-                    plt.legend(fontsize='small', ncol=1, handlelength=3, edgecolor='black', loc='upper right')
+                    plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
                 elif args.legend_out:
                     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0., 
-                            fontsize='small', ncol=1, handlelength=3, edgecolor='black')
+                            fontsize=12, ncol=1, handlelength=3, edgecolor='black')
                 elif args.legend_up:
                     plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
-                            fontsize='small', ncol=3, handlelength=3, edgecolor='black')
+                            fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
                 plt.savefig(f'pourbaix_bulk_{el}{suffix}.png', dpi=300, bbox_inches='tight')
                 print(f"Bulk Pourbaix diagram saved as pourbaix_bulk_{el}{suffix}.png")
@@ -1177,8 +1194,8 @@ def main():
     # Draw Pourbaix diagram
     fig, ax = plt.subplots(figsize=(args.figx, args.figy))
     ax.axis([pHmin, pHmax, Umin, Umax])
-    ax.set_xlabel('pH')
-    ax.set_ylabel('E (V vs. SHE)')
+    ax.set_xlabel('pH', fontsize=12)
+    ax.set_ylabel('E (V vs. SHE)', fontsize=12)
     # ax.tick_params(right=True, direction="in")
     plt.xticks(np.arange(pHmin, pHmax + 1, 2))
 
@@ -1206,65 +1223,79 @@ def main():
             new_surfs_ids.append(surf_id)
 
     # Create colormaps for each group
-    # Group 1: save_surfs (original surfaces) - use cmap_2d
-    colormap_2d = getattr(plt.cm, args.cmap_2d, plt.cm.RdBu)
+    # Group 1: save_surfs (original surfaces) - use cmap_2d or explicit colors
     n_save = len(save_surfs_ids)
     if n_save > 0:
-        if args.cgap_2d > 0 and args.cmap_2d in Diverging_colors:
-            gap = args.cgap_2d
-            left_end = 0.5 - gap/2
-            right_start = 0.5 + gap/2
-            
-            # Calculate how many colors go to left and right
-            n_left = int(np.ceil(n_save / 2))
-            n_right = n_save - n_left
-            
-            # Create color values avoiding the gap
-            if n_left > 0:
-                left = np.linspace(args.cmin_2d, left_end, n_left, endpoint=True)
-            else:
-                left = []
-            
-            if n_right > 0:
-                right = np.linspace(right_start, args.cmax_2d, n_right, endpoint=True)
-            else:
-                right = []
-            
-            color_values_save = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+        # Check if explicit colors are provided for 2D plots
+        if hasattr(args, 'colors_2d') and args.colors_2d:
+            explicit_colors_2d = parse_colors(args.colors_2d)
+            # Cycle colors if not enough provided
+            colors_save = [explicit_colors_2d[i % len(explicit_colors_2d)] for i in range(n_save)]
         else:
-            color_values_save = np.linspace(args.cmin_2d, args.cmax_2d, n_save)
-        colors_save = colormap_2d(color_values_save)
+            # Use colormap as before
+            colormap_2d = getattr(plt.cm, args.cmap_2d, plt.cm.RdBu)
+            if args.cgap_2d > 0 and args.cmap_2d in Diverging_colors:
+                gap = args.cgap_2d
+                left_end = 0.5 - gap/2
+                right_start = 0.5 + gap/2
+                
+                # Calculate how many colors go to left and right
+                n_left = int(np.ceil(n_save / 2))
+                n_right = n_save - n_left
+                
+                # Create color values avoiding the gap
+                if n_left > 0:
+                    left = np.linspace(args.cmin_2d, left_end, n_left, endpoint=True)
+                else:
+                    left = []
+                
+                if n_right > 0:
+                    right = np.linspace(right_start, args.cmax_2d, n_right, endpoint=True)
+                else:
+                    right = []
+                
+                color_values_save = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+            else:
+                color_values_save = np.linspace(args.cmin_2d, args.cmax_2d, n_save)
+            colors_save = colormap_2d(color_values_save)
     else:
         colors_save = []
 
-    # Group 2: new combinations - use cmap
-    colormap_new = getattr(plt.cm, args.cmap, plt.cm.Greys)
+    # Group 2: new combinations - use cmap or explicit colors
     n_new = len(new_surfs_ids)
     if n_new > 0:
-        if args.cgap > 0 and args.cmap in Diverging_colors:
-            gap = args.cgap
-            left_end = 0.5 - gap/2
-            right_start = 0.5 + gap/2
-            
-            # Calculate how many colors go to left and right
-            n_left = int(np.ceil(n_new / 2))
-            n_right = n_new - n_left
-            
-            # Create color values avoiding the gap
-            if n_left > 0:
-                left = np.linspace(args.cmin, left_end, n_left, endpoint=True)
-            else:
-                left = []
-            
-            if n_right > 0:
-                right = np.linspace(right_start, args.cmax, n_right, endpoint=True)
-            else:
-                right = []
-            
-            color_values_new = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+        # Check if explicit colors are provided for bulk plots (new combinations use bulk colormap)
+        if hasattr(args, 'colors_bulk') and args.colors_bulk:
+            explicit_colors_bulk = parse_colors(args.colors_bulk)
+            # Cycle colors if not enough provided
+            colors_new = [explicit_colors_bulk[i % len(explicit_colors_bulk)] for i in range(n_new)]
         else:
-            color_values_new = np.linspace(args.cmin, args.cmax, n_new)
-        colors_new = colormap_new(color_values_new)
+            # Use colormap as before
+            colormap_new = getattr(plt.cm, args.cmap, plt.cm.Greys)
+            if args.cgap > 0 and args.cmap in Diverging_colors:
+                gap = args.cgap
+                left_end = 0.5 - gap/2
+                right_start = 0.5 + gap/2
+                
+                # Calculate how many colors go to left and right
+                n_left = int(np.ceil(n_new / 2))
+                n_right = n_new - n_left
+                
+                # Create color values avoiding the gap
+                if n_left > 0:
+                    left = np.linspace(args.cmin, left_end, n_left, endpoint=True)
+                else:
+                    left = []
+                
+                if n_right > 0:
+                    right = np.linspace(right_start, args.cmax, n_right, endpoint=True)
+                else:
+                    right = []
+                
+                color_values_new = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+            else:
+                color_values_new = np.linspace(args.cmin, args.cmax, n_new)
+            colors_new = colormap_new(color_values_new)
     else:
         colors_new = []
 
@@ -1297,7 +1328,7 @@ def main():
     for i, surf_id in enumerate(reversed(new_surfs_ids)):
         label = surfs[int(surf_id)]['name']
         plt.plot([], [], color=colors_new[len(new_surfs_ids)-1-i], linewidth=5, label=label)
-
+    
     # pcolormesh
     pH_grid, U = np.meshgrid(pHrange, Urange)
     plt.pcolormesh(pH_grid, U, mapped_surfaces, cmap=cmap, norm=norm)
@@ -1309,13 +1340,13 @@ def main():
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
 
     if args.legend_in:
-        plt.legend(fontsize='small', ncol=1, handlelength=3, edgecolor='black', loc='upper right')
+        plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
     elif args.legend_out:
         plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0., 
-                fontsize='small', ncol=1, handlelength=3, edgecolor='black')
+                fontsize=12, ncol=1, handlelength=3, edgecolor='black')
     elif args.legend_up:
         plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
-                fontsize='small', ncol=3, handlelength=3, edgecolor='black')
+                fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
     plt.savefig(f'{png_name}{suffix}.png', dpi=300, bbox_inches='tight')
     print(f"Pourbaix diagram saved as {png_name}{suffix}.png")
@@ -1446,39 +1477,47 @@ def main():
 
     fig2, ax2 = plt.subplots(figsize=(args.figx, args.figy))
     ax2.axis([Umin, Umax, None, None])
-    ax2.set_xlabel('Potential (V vs. SHE)')
-    ax2.set_ylabel('Relative Energy (ΔG, eV)')
+    ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
+    ax2.set_ylabel('Relative Energy (ΔG, eV)', fontsize=12)
     ax2.tick_params()
 
     Urange = np.arange(Umin, Umax, tick)
     
     # 1D plot colormap/color range
-    colormap_1d = getattr(plt.cm, args.cmap_1d, plt.cm.RdBu)
     n_colors_1d = len(sorted_unique_ids)
-    if args.cgap_1d > 0 and args.cmap_1d in Diverging_colors:
-        gap = args.cgap_1d
-        left_end = 0.5 - gap/2
-        right_start = 0.5 + gap/2
-        
-        # Calculate how many colors go to left and right
-        n_left = int(np.ceil(n_colors_1d / 2))
-        n_right = n_colors_1d - n_left
-        
-        # Create color values avoiding the gap
-        if n_left > 0:
-            left = np.linspace(args.cmin_1d, left_end, n_left, endpoint=True)
-        else:
-            left = []
-        
-        if n_right > 0:
-            right = np.linspace(right_start, args.cmax_1d, n_right, endpoint=True)
-        else:
-            right = []
-        
-        color_values_1d = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+    
+    # Check if explicit colors are provided for 1D plots
+    if hasattr(args, 'colors_1d') and args.colors_1d:
+        explicit_colors_1d = parse_colors(args.colors_1d)
+        # Cycle colors if not enough provided
+        colors_1d = [explicit_colors_1d[i % len(explicit_colors_1d)] for i in range(n_colors_1d)]
     else:
-        color_values_1d = np.linspace(args.cmin_1d, args.cmax_1d, n_colors_1d)
-    colors_1d = colormap_1d(color_values_1d)
+        # Use colormap as before
+        colormap_1d = getattr(plt.cm, args.cmap_1d, plt.cm.RdBu)
+        if args.cgap_1d > 0 and args.cmap_1d in Diverging_colors:
+            gap = args.cgap_1d
+            left_end = 0.5 - gap/2
+            right_start = 0.5 + gap/2
+            
+            # Calculate how many colors go to left and right
+            n_left = int(np.ceil(n_colors_1d / 2))
+            n_right = n_colors_1d - n_left
+            
+            # Create color values avoiding the gap
+            if n_left > 0:
+                left = np.linspace(args.cmin_1d, left_end, n_left, endpoint=True)
+            else:
+                left = []
+            
+            if n_right > 0:
+                right = np.linspace(right_start, args.cmax_1d, n_right, endpoint=True)
+            else:
+                right = []
+            
+            color_values_1d = np.concatenate([left, right]) if len(left) > 0 and len(right) > 0 else (left if len(left) > 0 else right)
+        else:
+            color_values_1d = np.linspace(args.cmin_1d, args.cmax_1d, n_colors_1d)
+        colors_1d = colormap_1d(color_values_1d)
     
     for k in range(nsurfs):
         energies = np.zeros(len(Urange))
@@ -1515,13 +1554,13 @@ def main():
     ax2.set_xlim(Umin, Umax)
     # Generate legend (1D)
     if args.legend_in:
-        ax2.legend(fontsize='small', ncol=1, handlelength=3, edgecolor='black', loc='upper right')
+        ax2.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
     elif args.legend_out:
         ax2.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0., 
-                fontsize='small', ncol=1, handlelength=3, edgecolor='black')
+                fontsize=12, ncol=1, handlelength=3, edgecolor='black')
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
-                fontsize='small', ncol=3, handlelength=3, edgecolor='black')
+                fontsize=12, ncol=3, handlelength=3, edgecolor='black')
     plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
     print(f"Pourbaix diagram saved as {png_name}_pH{target_pH}{suffix}.png")
     if args.show_fig:
@@ -1539,6 +1578,40 @@ def dg(surf, pH, U, ref_surf):
 # ========================================
 # UTILITY FUNCTIONS
 # ========================================
+
+def parse_colors(color_names):
+    """
+    Convert color name strings to matplotlib color format (RGBA tuples).
+    
+    Args:
+        color_names (list): List of color name strings (e.g., ['red', 'blue', 'green'])
+        
+    Returns:
+        list: List of RGBA tuples representing colors
+        
+    Examples:
+        >>> parse_colors(['red', 'blue', 'green'])
+        [(1.0, 0.0, 0.0, 1.0), (0.0, 0.0, 1.0, 1.0), (0.0, 0.5, 0.0, 1.0)]
+    """
+    if color_names is None:
+        return None
+    
+    colors = []
+    for color_name in color_names:
+        try:
+            # Try to convert color name to RGBA tuple
+            rgba = mcolors.to_rgba(color_name)
+            colors.append(rgba)
+        except ValueError:
+            # If color name is invalid, try as hex code or default to black
+            try:
+                rgba = mcolors.to_rgba('#' + color_name if not color_name.startswith('#') else color_name)
+                colors.append(rgba)
+            except ValueError:
+                print(f"Warning: Invalid color name '{color_name}', using black instead.")
+                colors.append(mcolors.to_rgba('black'))
+    
+    return colors
 
 def format_name(formula):
     """
