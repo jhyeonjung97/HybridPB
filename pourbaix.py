@@ -1477,7 +1477,10 @@ def main():
 
     fig2, ax2 = plt.subplots(figsize=(args.figx, args.figy))
     ax2.axis([Umin, Umax, None, None])
-    ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
+    if pH == 0:
+        ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
+    else:
+        ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
     ax2.set_ylabel('Relative Energy (ΔG, eV)', fontsize=12)
     ax2.tick_params()
 
