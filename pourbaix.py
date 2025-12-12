@@ -1477,7 +1477,7 @@ def main():
 
     fig2, ax2 = plt.subplots(figsize=(args.figx, args.figy))
     ax2.axis([Umin, Umax, None, None])
-    if pH == 0:
+    if target_pH == 0.:
         ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
     else:
         ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
