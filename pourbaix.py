@@ -933,6 +933,12 @@ def main():
                     plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
                 if args.HER:
                     plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
+                # Plot two lines and fill between them
+                line1 = 0.780-pHrange*const
+                line2 = 0.920-pHrange*const
+                plt.plot(pHrange, line1, '-', lw=1, color='red')
+                plt.plot(pHrange, line2, '-', lw=1, color='red')
+                plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
                 if args.legend_in:
                     plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1338,6 +1344,12 @@ def main():
         plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
     if args.HER:
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
+    # Plot two lines and fill between them
+    line1 = 0.780-pHrange*const
+    line2 = 0.920-pHrange*const
+    plt.plot(pHrange, line1, '--', lw=1, color='red')
+    plt.plot(pHrange, line2, '--', lw=1, color='red')
+    plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1557,13 +1569,13 @@ def main():
     ax2.set_xlim(Umin, Umax)
     # Generate legend (1D)
     if args.legend_in:
-        ax2.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
+        ax2.legend(fontsize=10, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
     elif args.legend_out:
         ax2.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0., 
-                fontsize=12, ncol=1, handlelength=3, edgecolor='black')
+                fontsize=10, ncol=1, handlelength=3, edgecolor='black')
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
-                fontsize=12, ncol=3, handlelength=3, edgecolor='black')
+                fontsize=10, ncol=3, handlelength=3, edgecolor='black')
     plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
     print(f"Pourbaix diagram saved as {png_name}_pH{target_pH}{suffix}.png")
     if args.show_fig:
