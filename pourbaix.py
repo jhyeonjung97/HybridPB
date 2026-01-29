@@ -113,7 +113,7 @@ parser.add_argument('--gc', action='store_true',
                     help='Apply Grand Canonical DFT corrections using A, B, C columns from label.csv')
 
 # Thermodynamic conditions
-parser.add_argument('--pH', type=int, default=0, 
+parser.add_argument('--pH', type=float, default=0, 
                     help='pH value for the plot (default: 0)')
 parser.add_argument('--concentration', type=float, default=1e-6, 
                     help='Ion concentration in M (default: 10^-6 M)')
@@ -933,12 +933,6 @@ def main():
                     plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
                 if args.HER:
                     plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
-                # Plot two lines and fill between them
-                line1 = 0.780-pHrange*const
-                line2 = 0.920-pHrange*const
-                plt.plot(pHrange, line1, '-', lw=1, color='red')
-                plt.plot(pHrange, line2, '-', lw=1, color='red')
-                plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
                 if args.legend_in:
                     plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -989,7 +983,6 @@ def main():
     unique_elements_count = {}
     for unique_elem in unique_elements:
         unique_elements_count[unique_elem] = max(surfs, key=lambda x: x[unique_elem])[unique_elem]
-    print(unique_elements_count)
 
     # unique_elements_list = []
     # for unique_elem in unique_elements:
@@ -1138,9 +1131,6 @@ def main():
                                     new_surf[key] = surfs[k][key] + liquid[key]
                             new_surfs.append(new_surf)
         surfs.extend(new_surfs)
-
-    for surf in surfs:
-        print(surf)
 
     # Keep only those where surf[elem] matches unique_elements_count[elem] for all unique_elements
     unique_surfs = [surf for surf in surfs if all(surf[elem] == unique_elements_count[elem] for elem in unique_elements)]
