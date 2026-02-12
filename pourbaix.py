@@ -1335,7 +1335,7 @@ def main():
     if args.HER:
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
     # Plot two lines and fill between them
-    line1 = 0.780-pHrange*const
+    line1 = 0.720-pHrange*const
     line2 = 0.920-pHrange*const
     plt.plot(pHrange, line1, '--', lw=1, color='red')
     plt.plot(pHrange, line2, '--', lw=1, color='red')
