@@ -3,7 +3,11 @@ mkdir -p vac/
 # surface (without vac*.json files)
 mv vac*.json vac/
 python ../../pourbaix.py --show-transitions --OER --HER --png \
---figx 4 --figy 4 --cmap-2d Purples --cmin-2d 0.0 --cmax-2d 0.5
+--cmap-2d RdYlBu_r --cmin-2d 0.2 --cmax-2d 0.7 --cgap-2d 0.0
+--colors-2d dodgerblue lightskyblue gold orange
+--colors-2d '#B9E0ED' '#F0F9DB' '#FEE79B' '#FDAD60'
+
+--figx 4 --figy 4 --cmap-2d RdYlBu_r --cmin-2d 0.2 --cmax-2d 0.7 --cgap-2d 0.0
 
 # hybrid (bulk)
 mv vac/vac*.json .

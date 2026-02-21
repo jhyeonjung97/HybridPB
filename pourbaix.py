@@ -930,9 +930,9 @@ def main():
 
                 # Show water stability region
                 if args.OER:
-                    plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
+                    plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='blue')
                 if args.HER:
-                    plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
+                    plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
 
                 if args.legend_in:
                     plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1331,15 +1331,17 @@ def main():
 
     # Show water stability region
     if args.OER:
-        plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
+        plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='blue')
     if args.HER:
-        plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
-    # Plot two lines and fill between them
-    line1 = 0.720-pHrange*const
-    line2 = 0.920-pHrange*const
-    plt.plot(pHrange, line1, '--', lw=1, color='red')
-    plt.plot(pHrange, line2, '--', lw=1, color='red')
-    plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
+        plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
+    plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='greenyellow') #NO3RR
+
+    # # Plot two lines and fill between them
+    # line1 = 0.720-pHrange*const
+    # line2 = 0.920-pHrange*const
+    # plt.plot(pHrange, line1, '--', lw=1, color='red')
+    # plt.plot(pHrange, line2, '--', lw=1, color='red')
+    # plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1473,16 +1475,16 @@ def main():
     # Calculate energy at specific pH for plotting
     all_energies = []
     
-    # 1D plot: Sort unique_ids_set, unique_second_ids_set by 'e' value first, then by energy at U=0
+    # 1D plot for projected to target_pH: Sort unique_ids_set, unique_second_ids_set by 'e' value first, then by energy at U=0
     energies_at_U0 = [(k,surfs[k]['e'] - surfs[k]['H'] + 2*surfs[k]['O'], dg(surfs[k], pH=target_pH, U=0, ref_surf=surfs[ref_surf_idx])) for k in unique_ids_set | unique_second_ids_set]
     sorted_unique_ids = [k for k, _, _ in sorted(energies_at_U0, key=lambda x: (x[1], x[2]))]  # Sort by 'e' first, then by energy
 
     fig2, ax2 = plt.subplots(figsize=(args.figx, args.figy))
     ax2.axis([Umin, Umax, None, None])
-    if target_pH == 0.:
-        ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
-    else:
-        ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
+    # if target_pH == 0.:
+    #     ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
+    # else:
+    ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
     ax2.set_ylabel('Relative Energy (ΔG, eV)', fontsize=12)
     ax2.tick_params()
 
@@ -1566,8 +1568,8 @@ def main():
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize=10, ncol=3, handlelength=3, edgecolor='black')
-    plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
-    print(f"Pourbaix diagram saved as {png_name}_pH{target_pH}{suffix}.png")
+    plt.savefig(f'{png_name}_projected_to_target_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
+    print(f"Pourbaix diagram saved as {png_name}_projected_to_target_pH{target_pH}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
         plt.show()

@@ -36,3 +36,4 @@ rm -r OH/
 
 # white whitesmoke gainsboro lightgray silver darkgray gray dimgray
 # dimgray gray darkgray silver lightgray gainsboro whitesmoke white
+# dodgerblue lightskyblue gold orange
