@@ -92,7 +92,8 @@ SUBSCRIPT_NUMS = {'0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5
 SUPERSCRIPT_NUMS = {'0': '₀', '1': '₁', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'}
 
 # Available diverging color schemes for visualization
-Diverging_colors = ['RdBu', 'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
+Diverging_colors = ['RdBu', 'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic',
+'RdBu_r', 'PiYG_r', 'PRGn_r', 'BrBG_r', 'PuOr_r', 'RdGy_r', 'RdYlBu_r', 'RdYlGn_r', 'Spectral_r', 'coolwarm_r', 'bwr_r', 'seismic_r']
 
 # Command line argument parser configuration
 # This extensive argument parser allows users to customize every aspect of the Pourbaix diagram generation
@@ -113,7 +114,7 @@ parser.add_argument('--gc', action='store_true',
                     help='Apply Grand Canonical DFT corrections using A, B, C columns from label.csv')
 
 # Thermodynamic conditions
-parser.add_argument('--pH', type=float, default=0, 
+parser.add_argument('--pH', type=int, default=0, # float
                     help='pH value for the plot (default: 0)')
 parser.add_argument('--concentration', type=float, default=1e-6, 
                     help='Ion concentration in M (default: 10^-6 M)')
@@ -943,7 +944,7 @@ def main():
                     plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                             fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
-                plt.savefig(f'pourbaix_bulk_{el}{suffix}.png', dpi=300, bbox_inches='tight')
+                plt.savefig(f'2D_pourbaix_bulk_{el}{suffix}.png', dpi=300, bbox_inches='tight')
                 print(f"Bulk Pourbaix diagram saved as pourbaix_bulk_{el}{suffix}.png")
                 if args.show_fig:
                     plt.tight_layout()
@@ -1334,14 +1335,14 @@ def main():
         plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='blue')
     if args.HER:
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
-    plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='greenyellow') #NO3RR
+    # plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='blue') #NO3RR
 
-    # # Plot two lines and fill between them
-    # line1 = 0.720-pHrange*const
-    # line2 = 0.920-pHrange*const
-    # plt.plot(pHrange, line1, '--', lw=1, color='red')
-    # plt.plot(pHrange, line2, '--', lw=1, color='red')
-    # plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
+    # Plot two lines and fill between them
+    line1 = 0.720-pHrange*const
+    line2 = 0.920-pHrange*const
+    plt.plot(pHrange, line1, '--', lw=1, color='red')
+    plt.plot(pHrange, line2, '--', lw=1, color='red')
+    plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1352,7 +1353,7 @@ def main():
         plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
-    plt.savefig(f'{png_name}{suffix}.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'2D_{png_name}{suffix}.png', dpi=300, bbox_inches='tight')
     print(f"Pourbaix diagram saved as {png_name}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
@@ -1568,8 +1569,8 @@ def main():
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize=10, ncol=3, handlelength=3, edgecolor='black')
-    plt.savefig(f'{png_name}_projected_to_target_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
-    print(f"Pourbaix diagram saved as {png_name}_projected_to_target_pH{target_pH}{suffix}.png")
+    plt.savefig(f'1D_{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
+    print(f"Pourbaix diagram saved as 1D_{png_name}_pH{target_pH}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
         plt.show()
