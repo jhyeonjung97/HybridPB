@@ -1337,12 +1337,12 @@ def main():
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
     # plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='blue') #NO3RR
 
-    # Plot two lines and fill between them
-    line1 = 0.720-pHrange*const
-    line2 = 0.920-pHrange*const
-    plt.plot(pHrange, line1, '--', lw=1, color='red')
-    plt.plot(pHrange, line2, '--', lw=1, color='red')
-    plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
+    # # Plot two lines and fill between them
+    # line1 = 0.720-pHrange*const
+    # line2 = 0.920-pHrange*const
+    # plt.plot(pHrange, line1, '--', lw=1, color='red')
+    # plt.plot(pHrange, line2, '--', lw=1, color='red')
+    # plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
