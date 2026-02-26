@@ -6,14 +6,14 @@ mv vac*.json vac/
 python ../../pourbaix.py --Umin -1.0 --Umax 2.5 \
 --colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB' '#FEE79B' '#FDAD60'
 
-python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --legend-in \
+python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --Gmin -6 --Gmax 8 --legend-out \
 --colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB' '#FEE79B' '#FDAD60'
 
 # gc
 python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --gc \
 --colors-2d '#73ADD1' '#B9E0ED' royalblue '#FEE79B' '#FDAD60'
 
-python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --gc --legend-in \
+python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --gc --Gmin -6 --Gmax 8 --legend-out \
 --colors-2d '#73ADD1' '#B9E0ED' royalblue '#FEE79B' '#FDAD60'
 
 # hybrid (bulk)
@@ -31,6 +31,10 @@ python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --thermo-data
 --colors-bulk white gainsboro gainsboro white darkgray dimgray gray \
 --colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB'
 
+python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --thermo-data ./thermodynamic_data.jsonc \
+--colors-bulk white gainsboro gainsboro white darkgray dimgray gray \
+--colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB' --legend-out --Gmin -6 --Gmax 8 
+
 # gc + hybrid
 python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --gc --suffix Fe2O3 \
 --colors-bulk white gainsboro darkgray gainsboro dimgray white \
@@ -39,6 +43,10 @@ python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --gc --suffix
 python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --gc --thermo-data ./thermodynamic_data.jsonc \
 --colors-bulk white gainsboro gainsboro gray dimgray white \
 --colors-2d '#73ADD1' '#B9E0ED'
+
+python ../../pourbaix.py --Umin -1.0 --Umax 2.5 --hybrid --no-bulk --gc --thermo-data ./thermodynamic_data.jsonc \
+--colors-bulk white gainsboro gainsboro gray dimgray white \
+--colors-2d '#73ADD1' '#B9E0ED' --legend-out --Gmin -6 --Gmax 8 
 
 # white whitesmoke gainsboro=lightgray=silver=darkgray gray dimgray gray darkgray=silver=lightgray=gainsboro whitesmoke white
 
