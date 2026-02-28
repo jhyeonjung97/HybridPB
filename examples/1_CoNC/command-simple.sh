@@ -1,6 +1,5 @@
-mkdir -p vac/
-
 # surface (without vac*.json files)
+mkdir -p vac/
 mv vac*.json vac/
 python ../../pourbaix.py --OER --HER --png \
 --colors-2d '#73ADD1' '#B9E0ED' '#FEE79B' '#FDAD60'
@@ -20,6 +19,6 @@ python ../../pourbaix.py --OER --HER --hybrid --concentration 1e-8 --suffix conc
 # hybrid (pH)
 python ../../pourbaix.py --OER --HER --hybrid --no-bulk --legend-in --Gmin -8 --Gmax 8 --pH 0
 python ../../pourbaix.py --OER --HER --hybrid --no-bulk --legend-in --Gmin -8 --Gmax 8 --pH 7
-python ../../pourbaix.py --OER --HER --hybrid --no-bulk --legend-in --Gmin -8 --Gmax 8 --pH 14
-
-rm -r vac/
+python ../../pourbaix.py --OER --HER --hybrid --no-bulk --legend-in --Gmin -8 --Gmax 8 --pH 14 \
+--colors-bulk white lightgray gray lightgray darkgray white \
+--colors-2d '#B9E0ED' '#FEE79B' '#FDAD60'
