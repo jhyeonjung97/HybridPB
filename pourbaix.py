@@ -1336,16 +1336,19 @@ def main():
     if args.HER:
         plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
     # plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='blue') #NO3RR
-    # plt.plot(pHrange, -1.10346332406801+pHrange*0, '--', lw=1, color='green') #clean(hs)
-    # plt.plot(pHrange, -1.01280687446284+pHrange*0, '--', lw=1, color='green') #clean(is)
-    # plt.plot(pHrange, -0.768925499892501+pHrange*0, '--', lw=1, color='green') #oh(hs)
+    # plt.plot(pHrange, -0.768925499892501+pHrange*0, '--', lw=1, color='white') #oh(hs)
+    # plt.plot(pHrange, -1.10346332406801+pHrange*0, '--', lw=1, color='white') #clean(hs)
+    # plt.plot(pHrange, -1.01280687446284+pHrange*0, '--', lw=1, color='white') #clean(is)
+    plt.plot(pHrange, -1.01280687446284+pHrange*0, '--', lw=1, color='green') #clean(is)
+    # plt.plot(pHrange, -0.092131432+pHrange*0, '--', lw=1, color='green') #vac(*)
+    # plt.plot(pHrange, -0.934679247+pHrange*0, '--', lw=1, color='green') #vac(*H2)
 
-    # # Plot two lines and fill between them
-    # line1 = 0.720-pHrange*const
-    # line2 = 0.920-pHrange*const
-    # # plt.plot(pHrange, line1, '--', lw=1, color='red')
-    # # plt.plot(pHrange, line2, '--', lw=1, color='red')
-    # plt.fill_between(pHrange, line1, line2, alpha=0.2, color='red')
+    # Plot two lines and fill between them
+    line1 = 0.720-pHrange*const
+    line2 = 0.920-pHrange*const
+    # plt.plot(pHrange, line1, '--', lw=1, color='red')
+    # plt.plot(pHrange, line2, '--', lw=1, color='red')
+    plt.fill_between(pHrange, line1, line2, alpha=0.2, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')

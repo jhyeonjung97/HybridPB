@@ -20,7 +20,7 @@ python ../../pourbaix.py --Umin -1.5 --Umax 2.0 --hybrid --no-bulk --suffix Fe2O
 
 python ../../pourbaix.py --Umin -1.5 --Umax 2.0 --hybrid --no-bulk --thermo-data ./thermodynamic_data.jsonc \
 --colors-bulk white gainsboro gainsboro white darkgray dimgray gray \
---colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB' --Gmin -6 --Gmax 8 
+--colors-2d '#73ADD1' '#B9E0ED' '#F0F9DB' --Gmin -6 --Gmax 8
 
 # gc + hybrid
 python ../../pourbaix.py --Umin -1.5 --Umax 2.0 --hybrid --no-bulk --gc --suffix Fe2O3 \
@@ -29,4 +29,4 @@ python ../../pourbaix.py --Umin -1.5 --Umax 2.0 --hybrid --no-bulk --gc --suffix
 
 python ../../pourbaix.py --Umin -1.5 --Umax 2.0 --hybrid --no-bulk --gc --thermo-data ./thermodynamic_data.jsonc \
 --colors-bulk white gainsboro gainsboro gray dimgray white \
---colors-2d '#73ADD1' '#B9E0ED' --Gmin -6 --Gmax 8 
+--colors-2d '#73ADD1' '#B9E0ED' --Gmin -6 --Gmax 8
