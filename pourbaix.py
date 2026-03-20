@@ -569,16 +569,18 @@ def main():
         print(f"Using reference energy: {reference_surface_energy:.3f} eV")
     
     for k in range(len(surfs)):
+        json_basename = None
+        
+        # Find the corresponding filename for this surface
+        for fname, label in file_labels.items():
+            if label == surfs[k]['name']:
+                json_basename = fname
+                break
+
         if not file_gibbs_corrections or all(pd.isna(value) for value in file_gibbs_corrections.values()):  # If no Gibbs corrections are provided or all values are NaN
+            # print("No Gibbs corrections provided, using thermodynamic reference states")
             # Determine OH group count for this surface
             oh_count = 0  # Default: no OH groups
-            json_basename = None
-            
-            # Find the corresponding filename for this surface
-            for fname, label in file_labels.items():
-                if label == surfs[k]['name']:
-                    json_basename = fname
-                    break
             
             # Use OH count from CSV file if available
             if json_basename and json_basename in file_oh_counts:
@@ -593,9 +595,20 @@ def main():
                 - oh_count * (goh - dgoh)                  # OH groups
             )
         else:  # If Gibbs corrections are provided, use simpler correction
+            # print("Using Gibbs corrections")
+            # Determine gibbs correction for this surface
+            gibbs_correction = 0
+
+            # Use gibbs correction from CSV file if available
+            if json_basename and json_basename in file_gibbs_corrections:
+                if not np.isnan(file_gibbs_corrections[json_basename]):
+                    gibbs_correction = file_gibbs_corrections[json_basename]
+
+            # Calculate formation energy correction using Gibbs corrections
             formation_energy_correction = (
                 - surfs[k]['H'] * gh  # H atoms
                 - surfs[k]['O'] * go  # O atoms
+                + gibbs_correction
             )
         
         # Update the energy to formation energy
