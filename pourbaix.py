@@ -92,7 +92,8 @@ SUBSCRIPT_NUMS = {'0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5
 SUPERSCRIPT_NUMS = {'0': '₀', '1': '₁', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'}
 
 # Available diverging color schemes for visualization
-Diverging_colors = ['RdBu', 'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
+Diverging_colors = ['RdBu', 'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic',
+'RdBu_r', 'PiYG_r', 'PRGn_r', 'BrBG_r', 'PuOr_r', 'RdGy_r', 'RdYlBu_r', 'RdYlGn_r', 'Spectral_r', 'coolwarm_r', 'bwr_r', 'seismic_r']
 
 # Command line argument parser configuration
 # This extensive argument parser allows users to customize every aspect of the Pourbaix diagram generation
@@ -113,7 +114,7 @@ parser.add_argument('--gc', action='store_true',
                     help='Apply Grand Canonical DFT corrections using A, B, C columns from label.csv')
 
 # Thermodynamic conditions
-parser.add_argument('--pH', type=float, default=0, 
+parser.add_argument('--pH', type=int, default=0, # float
                     help='pH value for the plot (default: 0)')
 parser.add_argument('--concentration', type=float, default=1e-6, 
                     help='Ion concentration in M (default: 10^-6 M)')
@@ -568,16 +569,18 @@ def main():
         print(f"Using reference energy: {reference_surface_energy:.3f} eV")
     
     for k in range(len(surfs)):
+        json_basename = None
+        
+        # Find the corresponding filename for this surface
+        for fname, label in file_labels.items():
+            if label == surfs[k]['name']:
+                json_basename = fname
+                break
+
         if not file_gibbs_corrections or all(pd.isna(value) for value in file_gibbs_corrections.values()):  # If no Gibbs corrections are provided or all values are NaN
+            # print("No Gibbs corrections provided, using thermodynamic reference states")
             # Determine OH group count for this surface
             oh_count = 0  # Default: no OH groups
-            json_basename = None
-            
-            # Find the corresponding filename for this surface
-            for fname, label in file_labels.items():
-                if label == surfs[k]['name']:
-                    json_basename = fname
-                    break
             
             # Use OH count from CSV file if available
             if json_basename and json_basename in file_oh_counts:
@@ -592,9 +595,20 @@ def main():
                 - oh_count * (goh - dgoh)                  # OH groups
             )
         else:  # If Gibbs corrections are provided, use simpler correction
+            # print("Using Gibbs corrections")
+            # Determine gibbs correction for this surface
+            gibbs_correction = 0
+
+            # Use gibbs correction from CSV file if available
+            if json_basename and json_basename in file_gibbs_corrections:
+                if not np.isnan(file_gibbs_corrections[json_basename]):
+                    gibbs_correction = file_gibbs_corrections[json_basename]
+
+            # Calculate formation energy correction using Gibbs corrections
             formation_energy_correction = (
                 - surfs[k]['H'] * gh  # H atoms
                 - surfs[k]['O'] * go  # O atoms
+                + gibbs_correction
             )
         
         # Update the energy to formation energy
@@ -930,9 +944,9 @@ def main():
 
                 # Show water stability region
                 if args.OER:
-                    plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
+                    plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='blue')
                 if args.HER:
-                    plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
+                    plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
 
                 if args.legend_in:
                     plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -943,7 +957,7 @@ def main():
                     plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                             fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
-                plt.savefig(f'pourbaix_bulk_{el}{suffix}.png', dpi=300, bbox_inches='tight')
+                plt.savefig(f'2D_pourbaix_bulk_{el}{suffix}.png', dpi=300, bbox_inches='tight')
                 print(f"Bulk Pourbaix diagram saved as pourbaix_bulk_{el}{suffix}.png")
                 if args.show_fig:
                     plt.tight_layout()
@@ -1331,15 +1345,23 @@ def main():
 
     # Show water stability region
     if args.OER:
-        plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='mediumblue')
+        plt.plot(pHrange, 1.23-pHrange*const, '--', lw=1, color='blue')
     if args.HER:
-        plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='mediumblue')
+        plt.plot(pHrange, 0-pHrange*const, '--', lw=1, color='blue')
+    # plt.plot(pHrange, -0.7-pHrange*const, '--', lw=1, color='blue') #NO3RR
+    # plt.plot(pHrange, -0.768925499892501+pHrange*0, '--', lw=1, color='white') #oh(hs)
+    # plt.plot(pHrange, -1.10346332406801+pHrange*0, '--', lw=1, color='white') #clean(hs)
+    # plt.plot(pHrange, -1.01280687446284+pHrange*0, '--', lw=1, color='white') #clean(is)
+    plt.plot(pHrange, -1.01280687446284+pHrange*0, '--', lw=1, color='green') #clean(is)
+    # plt.plot(pHrange, -0.092131432+pHrange*0, '--', lw=1, color='green') #vac(*)
+    # plt.plot(pHrange, -0.934679247+pHrange*0, '--', lw=1, color='green') #vac(*H2)
+
     # Plot two lines and fill between them
     line1 = 0.720-pHrange*const
     line2 = 0.920-pHrange*const
-    plt.plot(pHrange, line1, '--', lw=1, color='red')
-    plt.plot(pHrange, line2, '--', lw=1, color='red')
-    plt.fill_between(pHrange, line1, line2, alpha=0.3, color='red')
+    # plt.plot(pHrange, line1, '--', lw=1, color='red')
+    # plt.plot(pHrange, line2, '--', lw=1, color='red')
+    plt.fill_between(pHrange, line1, line2, alpha=0.2, color='red')
 
     if args.legend_in:
         plt.legend(fontsize=12, ncol=1, handlelength=3, edgecolor='black', loc='upper right')
@@ -1350,7 +1372,7 @@ def main():
         plt.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize=12, ncol=3, handlelength=3, edgecolor='black')
 
-    plt.savefig(f'{png_name}{suffix}.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'2D_{png_name}{suffix}.png', dpi=300, bbox_inches='tight')
     print(f"Pourbaix diagram saved as {png_name}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
@@ -1473,16 +1495,16 @@ def main():
     # Calculate energy at specific pH for plotting
     all_energies = []
     
-    # 1D plot: Sort unique_ids_set, unique_second_ids_set by 'e' value first, then by energy at U=0
+    # 1D plot for projected to target_pH: Sort unique_ids_set, unique_second_ids_set by 'e' value first, then by energy at U=0
     energies_at_U0 = [(k,surfs[k]['e'] - surfs[k]['H'] + 2*surfs[k]['O'], dg(surfs[k], pH=target_pH, U=0, ref_surf=surfs[ref_surf_idx])) for k in unique_ids_set | unique_second_ids_set]
     sorted_unique_ids = [k for k, _, _ in sorted(energies_at_U0, key=lambda x: (x[1], x[2]))]  # Sort by 'e' first, then by energy
 
     fig2, ax2 = plt.subplots(figsize=(args.figx, args.figy))
     ax2.axis([Umin, Umax, None, None])
-    if target_pH == 0.:
-        ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
-    else:
-        ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
+    # if target_pH == 0.:
+    #     ax2.set_xlabel('Potential (V vs. RHE)', fontsize=12)
+    # else:
+    ax2.set_xlabel('Potential (V vs. SHE)', fontsize=12)
     ax2.set_ylabel('Relative Energy (ΔG, eV)', fontsize=12)
     ax2.tick_params()
 
@@ -1566,8 +1588,8 @@ def main():
     elif args.legend_up:
         ax2.legend(bbox_to_anchor=(0.5, 1.02), loc='lower center', borderaxespad=0., 
                 fontsize=10, ncol=3, handlelength=3, edgecolor='black')
-    plt.savefig(f'{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
-    print(f"Pourbaix diagram saved as {png_name}_pH{target_pH}{suffix}.png")
+    plt.savefig(f'1D_{png_name}_pH{target_pH}{suffix}.png', dpi=300, bbox_inches='tight', transparent=True)
+    print(f"Pourbaix diagram saved as 1D_{png_name}_pH{target_pH}{suffix}.png")
     if args.show_fig:
         plt.tight_layout()
         plt.show()

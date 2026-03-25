@@ -1,38 +1,18 @@
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 \
---colors-bulk white whitesmoke lightgray darkgray gray orange gray gold darkgray lightgray white \
+# hybrid
+python ~/bin/HybridPB/pourbaix.py --legend-out --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
+--colors-bulk white whitesmoke lightgray darkgray gray orange darkgray gold lightgray whitesmoke white \
 --colors-2d dodgerblue lightskyblue
 
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 --legend-out \
---colors-bulk white whitesmoke lightgray darkgray gray orange gray gold darkgray lightgray white \
---colors-2d dodgerblue lightskyblue
-
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 \
+# hybrid without MnO4-
+python ~/bin/HybridPB/pourbaix.py --legend-out --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
 --colors-bulk white whitesmoke lightgray darkgray gray orange dimgray gold gray darkgray silver white lightgray gainsboro whitesmoke dimgray \
 --colors-2d dodgerblue lightskyblue \
 --thermo-data ./thermodynamic_data.jsonc --suffix MnO4-
 
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 \
---colors-bulk white whitesmoke lightgray darkgray gray orange dimgray gold gray darkgray silver white lightgray gainsboro whitesmoke dimgray \
---colors-2d dodgerblue lightskyblue \
---thermo-data ./thermodynamic_data.jsonc --suffix MnO4- --legend-out
-
-mkdir OH/
+# hybrid with OHBridge_OHTop.json
+mkdir -p OH/
 mv OHBridge_OHTop.json OH/
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 \
+python ~/bin/HybridPB/pourbaix.py --legend-out --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
 --colors-bulk white whitesmoke gainsboro silver darkgray gray dimgray gray darkgray silver gainsboro whitesmoke white \
 --colors-2d dodgerblue lightskyblue --suffix OH
-
-python ~/bin/HybridPB/pourbaix.py --OER --HER --show-transitions --hybrid --no-bulk \
---Umin -0.5 --Umax 2.5 --Gmin -15 --Gmax 15 --legend-out \
---colors-bulk white whitesmoke gainsboro silver darkgray gray dimgray gray darkgray silver gainsboro whitesmoke white \
---colors-2d dodgerblue lightskyblue --suffix OH
-
-rm -r OH/
-
-# white whitesmoke gainsboro lightgray silver darkgray gray dimgray
-# dimgray gray darkgray silver lightgray gainsboro whitesmoke white
+mv OH/OHBridge_OHTop.json .
