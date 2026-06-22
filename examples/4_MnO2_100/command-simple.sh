@@ -1,24 +1,31 @@
+# hybrid (bulk)
+python ../../HybridPourbaix.py --hybrid --HER --OER \
+--Umin -0.5 --Umax 2.0 --suffix K --colors-bulk white gainsboro
+
+python ../../HybridPourbaix.py --hybrid --HER --OER \
+--Umin -0.5 --Umax 2.0 --suffix Mn --colors-bulk white gainsboro silver gray dimgray silver gainsboro white
+
 # hybrid
-python ~/bin/HybridPB/pourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
---colors-bulk white whitesmoke lightgray darkgray gray orange darkgray gold lightgray whitesmoke white \
---colors-2d dodgerblue lightskyblue
+mkdir -p OH/
+mv OH/OHBridge_OHTop.json .
+python ../../HybridPourbaix.py --OER --hybrid --no-bulk --Umin -0.5 --Umax 2.0 \
+--colors-bulk white whitesmoke lightgray darkgray gray darkgray whitesmoke gold white lemonchiffon \
+--colors-2d dodgerblue lightskyblue --suffix small
+
+mv OH/OHBridge_OHTop.json .
+python ../../HybridPourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.0 \
+--colors-bulk white whitesmoke lightgray darkgray gray darkgray whitesmoke gold white lemonchiffon \
+--colors-2d dodgerblue lightskyblue --figx 6 --figy 6 --suffix large
 
 # hybrid without MnO4-
-python ~/bin/HybridPB/pourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
---colors-bulk white whitesmoke lightgray darkgray gray orange dimgray gold gray darkgray silver white lightgray gainsboro whitesmoke dimgray \
+mv OH/OHBridge_OHTop.json .
+python ../../HybridPourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.0 \
+--colors-bulk white whitesmoke lightgray darkgray gray gold '#FFBE02' orange lemonchiffon \
 --colors-2d dodgerblue lightskyblue \
---thermo-data ./thermodynamic_data.jsonc --suffix MnO4-
+--thermo-data ./thermodynamic_data.jsonc --figx 6 --figy 6 --suffix MnO4
 
 # hybrid with OHBridge_OHTop.json
-mkdir -p OH/
 mv OHBridge_OHTop.json OH/
-python ~/bin/HybridPB/pourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.5 \
---colors-bulk white whitesmoke gainsboro silver darkgray gray dimgray gray darkgray silver gainsboro whitesmoke white \
---colors-2d dodgerblue lightskyblue --suffix OH
-mv OH/OHBridge_OHTop.json .
-
-# python ~/bin/HybridPB/pourbaix.py --hybrid --HER --OER \
-# --Umin -0.5 --Umax 2.5 --suffix K --colors-bulk white gainsboro
-
-# python ~/bin/HybridPB/pourbaix.py --hybrid --HER --OER \
-# --Umin -0.5 --Umax 2.5 --suffix Mn --colors-bulk white gainsboro silver gray dimgray silver gainsboro white
+python ../../HybridPourbaix.py --hybrid --no-bulk --Umin -0.5 --Umax 2.0 \
+--colors-bulk white whitesmoke lightgray darkgray gray darkgray whitesmoke lightgray white lemonchiffon \
+--colors-2d dodgerblue lightskyblue --figx 6 --figy 6 --suffix OH
