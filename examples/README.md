@@ -71,7 +71,7 @@ python ../../HybridPourbaix.py --hybrid --no-bulk --gc --thermo-data ./thermodyn
 
 Concepts: `--gc`, `--fill`, custom thermodynamic data, 1D y-axis limits (`--Gmin`/`--Gmax`)
 
-Additional scripts: `command-gc.sh` (GC-focused), `command_GnYl.sh` (green–yellow colormap), `command-toc.sh` (table-of-contents figures)
+Additional script: `command-toc.sh` (table-of-contents figures)
 
 ### Oxide Surfaces — Examples 4 & 5 (MnO₂)
 
@@ -133,7 +133,7 @@ To submit: create a numbered directory (e.g. `6_MySystem/`), add inputs and scri
 ## Further Reading
 
 - Main documentation: [../README.md](../README.md)
-- Repository: [https://github.com/jhyeonjung97/HybridPB](https://github.com/jhyeonjung97/HybridPB)
+- Repository: [https://github.com/hailey-suncat/HybridPB](https://github.com/hailey-suncat/HybridPB)
 
 ## Troubleshooting
 
@@ -144,5 +144,5 @@ To submit: create a numbered directory (e.g. `6_MySystem/`), add inputs and scri
 | Too many legend entries | Use `--no-bulk` or filter structures by moving JSON files into subdirectories |
 | GC-DFT not applied | Ensure `--gc` is set and `A,B,C` columns are filled in `label.csv` |
 
-- **Issues**: [GitHub Issues](https://github.com/jhyeonjung97/HybridPB/issues)
-- **Questions**: [GitHub Discussions](https://github.com/jhyeonjung97/HybridPB/discussions)
+- **Issues**: [GitHub Issues](https://github.com/hailey-suncat/HybridPB/issues)
+- **Questions**: [GitHub Discussions](https://github.com/hailey-suncat/HybridPB/discussions)

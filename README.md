@@ -37,7 +37,7 @@ The main entry point is `HybridPourbaix.py`.
 
 ### Installation
 ```bash
-git clone https://github.com/jhyeonjung97/HybridPB.git
+git clone https://github.com/hailey-suncat/HybridPB.git
 cd HybridPB
 pip install -r requirements.txt
 ```
@@ -351,14 +351,14 @@ This project is licensed under the GNU General Public License v3.0 — see [LICE
   title={HybridPB: Hybrid Pourbaix Diagram Generation Tool},
   author={Hyeonjung Jung},
   year={2025},
-  url={https://github.com/jhyeonjung97/HybridPB}
+  url={https://github.com/hailey-suncat/HybridPB}
 }
 ```
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/jhyeonjung97/HybridPB/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/jhyeonjung97/HybridPB/discussions)
+- **Issues**: [GitHub Issues](https://github.com/hailey-suncat/HybridPB/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/hailey-suncat/HybridPB/discussions)
 
 ## Changelog
 
