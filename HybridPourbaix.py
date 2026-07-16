@@ -206,6 +206,13 @@ def resolve_plot_colors(n_colors, explicit_color_names, cmap_name, cmin, cmax, c
     return colormap(color_values)
 
 
+def show_used_colors(title, colors, labels):
+    """Print hex codes of colors actually used in a plot."""
+    print(f"\n{title} colors:")
+    for color, label in zip(colors, labels):
+        print(f"  {mcolors.to_hex(color)}  {label}")
+
+
 def apply_legend(args, fontsize=12):
     """Apply legend placement based on CLI flags."""
     legend_kwargs = dict(fontsize=fontsize, handlelength=3, edgecolor='black')
@@ -342,6 +349,7 @@ def parse_args():
     display.add_argument('--show-count', action='store_true', help='Print atom counts per structure')
     display.add_argument('--show-label', action='store_true', help='Print structure labels')
     display.add_argument('--show-min-coord', action='store_true', help='Print minimum coordination info')
+    display.add_argument('--show-colors', action='store_true', help='Print hex codes of colors used in each plot')
 
     output = parser.add_argument_group('output')
     output.add_argument('--png', action='store_true', help='Export structure PNGs from JSON files')
@@ -678,6 +686,8 @@ def plot_bulk_diagram(el, bulks, pHrange, Urange, pHmin, pHmax, Umin, Umax, args
     colors = resolve_plot_colors(
         len(unique_ids), args.colors_bulk, args.cmap, args.cmin, args.cmax, args.cgap, plt.cm.Greys,
     )
+    if args.show_colors:
+        show_used_colors(f'Bulk ({el})', colors, [bulks[int(b)]['name'] for b in unique_ids])
     cmap = mcolors.ListedColormap(colors)
     norm = mcolors.BoundaryNorm(np.arange(len(unique_ids) + 1) - 0.5, cmap.N)
     id_map = {val: idx for idx, val in enumerate(unique_ids)}
@@ -688,11 +698,11 @@ def plot_bulk_diagram(el, bulks, pHrange, Urange, pHmin, pHmax, Umin, Umax, args
                  label=bulks[int(bulk_id)]['name'])
 
     pH_grid, U = np.meshgrid(pHrange, Urange)
-    plt.pcolormesh(pH_grid, U, mapped_bulks, cmap=cmap, norm=norm)
+    plt.pcolormesh(pH_grid, U, mapped_bulks, cmap=cmap, norm=norm, rasterized=True)
     plot_water_stability(pHrange, args)
     apply_legend(args)
 
-    out_name = f'pourbaix_bulk_{el}{suffix}.png'
+    out_name = f'pourbaix_bulk_{el}{suffix}.pdf'
     plt.savefig(out_name, dpi=300, bbox_inches='tight')
     print(f"Bulk Pourbaix diagram saved as {out_name}")
     if args.show_fig:
@@ -763,6 +773,12 @@ def plot_2d_diagram(surfs, save_surfs, lowest_surfaces, pHrange, Urange,
         len(new_ids), args.colors_bulk, args.cmap, args.cmin, args.cmax, args.cgap, plt.cm.Greys,
     ) if new_ids else []
 
+    if args.show_colors:
+        if len(save_ids) > 0:
+            show_used_colors('2D original surfaces', colors_save, [surfs[int(i)]['name'] for i in save_ids])
+        if len(new_ids) > 0:
+            show_used_colors('2D combinations', colors_new, [surfs[int(i)]['name'] for i in new_ids])
+
     all_colors, id_map = [], {}
     for i, surf_id in enumerate(save_ids):
         all_colors.append(colors_save[i])
@@ -783,11 +799,11 @@ def plot_2d_diagram(surfs, save_surfs, lowest_surfaces, pHrange, Urange,
                  label=surfs[int(surf_id)]['name'])
 
     pH_grid, U = np.meshgrid(pHrange, Urange)
-    plt.pcolormesh(pH_grid, U, mapped, cmap=cmap, norm=norm)
+    plt.pcolormesh(pH_grid, U, mapped, cmap=cmap, norm=norm, rasterized=True)
     plot_water_stability(pHrange, args)
     apply_legend(args)
 
-    out_name = f'{png_name}{suffix}.png'
+    out_name = f'{png_name}{suffix}.pdf'
     plt.savefig(out_name, dpi=300, bbox_inches='tight')
     print(f"Pourbaix diagram saved as {out_name}")
     if args.show_fig:
@@ -827,6 +843,8 @@ def plot_1d_diagram(surfs, nsurfs, Urange, Umin, Umax, target_pH, ref_surf, uniq
         len(sorted_ids), args.colors_1d, args.cmap_1d, args.cmin_1d, args.cmax_1d, args.cgap_1d,
         plt.cm.RdBu,
     )
+    if args.show_colors:
+        show_used_colors(f'1D (pH {target_pH})', colors, [surfs[k]['name'] for k in sorted_ids])
 
     Urange_1d = np.arange(Umin, Umax, tick)
     all_energies = []
@@ -850,8 +868,8 @@ def plot_1d_diagram(surfs, nsurfs, Urange, Umin, Umax, target_pH, ref_surf, uniq
     ax.set_xlim(Umin, Umax)
     apply_legend(args, fontsize=10)
 
-    out_name = f'{png_name}_pH{target_pH}{suffix}.png'
-    plt.savefig(out_name, dpi=300, bbox_inches='tight')
+    out_name = f'{png_name}_pH{target_pH}{suffix}.pdf'
+    plt.savefig(out_name, bbox_inches='tight')
     print(f"Pourbaix diagram saved as {out_name}")
     if args.show_fig:
         plt.tight_layout()
