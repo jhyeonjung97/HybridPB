@@ -866,7 +866,7 @@ def plot_1d_diagram(surfs, nsurfs, Urange, Umin, Umax, target_pH, ref_surf, uniq
     Gmax = args.Gmax if args.Gmax is not None else max(all_energies)
     ax.set_ylim(Gmin, Gmax)
     ax.set_xlim(Umin, Umax)
-    apply_legend(args, fontsize=10)
+    apply_legend(args)
 
     out_name = f'{png_name}_pH{target_pH}{suffix}.pdf'
     plt.savefig(out_name, bbox_inches='tight')
